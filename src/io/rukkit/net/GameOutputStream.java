@@ -54,5 +54,5 @@ public class GameOutputStream
 		enc.buffer.writeTo((OutputStream)this.stream);
 		//stream.flush();
 	}
-	}
+	
 }
