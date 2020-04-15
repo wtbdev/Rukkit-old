@@ -1,2 +1,3 @@
-# rukkit.github.io
-Rukkit Website
+# Rukkit
+A Java based rustedwarfare server.
+
