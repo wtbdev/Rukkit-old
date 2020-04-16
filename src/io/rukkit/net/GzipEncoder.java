@@ -9,7 +9,7 @@ public class GzipEncoder
     public ByteArrayOutputStream buffer;
     public DataOutputStream stream;
 
-    public GzipEncoder() throws IOException {
+    public GzipEncoder(){
         this.buffer = new ByteArrayOutputStream();
         this.stream = new DataOutputStream((OutputStream)this.buffer);
     }

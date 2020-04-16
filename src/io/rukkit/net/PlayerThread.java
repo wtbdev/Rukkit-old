@@ -1,5 +1,6 @@
 package io.rukkit.net;
 import io.rukkit.*;
+import io.rukkit.command.*;
 import io.rukkit.entity.*;
 import io.rukkit.util.*;
 import java.io.*;
@@ -186,6 +187,7 @@ public class PlayerThread implements Runnable
 				//sendSystemMessage("Have a try");
 				break;
 			case PacketType.PACKET_ADD_CHAT:
+				receiveChat(p);
 				break;	
 		}
 	}
@@ -241,6 +243,55 @@ public class PlayerThread implements Runnable
 	public void disconnect()
 	{
 		// TODO: Implement this method
+	}
+	
+	private void receiveChat(Packet p) throws IOException{
+		ByteArrayInputStream by = new ByteArrayInputStream(p.bytes);
+		DataInputStream n = new DataInputStream(by);
+		String message = n.readUTF();
+		/*if(message.startsWith(".") || message.startsWith("-") || message.startsWith("_")){
+			CommandUtil.executeCommand(message.substring(1), this);
+		}else{
+			Main.sendBroadcast(message, PlayerUtil.fetchPlayer(index).playerName, index);
+		}*/
+	}
+
+	private void receiveCommand(Packet p) throws IOException{
+		GameInputStream in = new GameInputStream(p);
+		byte[] tin = in.getDecodeBytes();
+		GameCommand cmd = new GameCommand();
+		cmd.sendBy = this.threadIndex;
+		cmd.arr = tin;
+		Rukkit.thread.commandQuere.addLast(cmd);
+	}
+
+	public void sendGameTickCommand(int tick, GameCommand cmd) throws IOException{
+		GameOutputStream o = new GameOutputStream();
+		o.writeInt(tick);
+		o.writeInt(1);
+		GzipEncoder enc = o.getEncodeStream("c");
+		enc.stream.write(cmd.arr);
+		//o.stream.write(cmd.arr);
+		o.flushEncodeData(enc);
+		sendPacket(o.createPacket(10));
+	}
+
+	public void sendTick(int tick) throws IOException{
+		GameOutputStream o = new GameOutputStream();
+		o.writeInt(tick);
+		o.writeInt(0);
+		sendPacket(o.createPacket(10));
+	}
+
+	public void startGame() throws IOException{
+		teamTask.run();
+		sendServerInfo();
+		GameOutputStream o = new GameOutputStream();
+		o.writeByte(0);
+		o.writeInt(0);
+		o.writeString("maps/skirmish/" + ServerProperties.mapName + ".tmx");
+		sendPacket(o.createPacket(120));
+		teamTask.cancel();
 	}
 
 	private boolean getPlayerInfo(Packet p) throws IOException
