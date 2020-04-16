@@ -161,7 +161,8 @@ public class PlayerThread implements Runnable
 		}
 		catch (IOException e)
 		{
-
+			e.printStackTrace();
+			disconnect();
 		}
 	}
 
@@ -179,6 +180,7 @@ public class PlayerThread implements Runnable
 				{
 					new Timer().schedule(heartBeatTask, 0, 2000);
 					new Timer().schedule(teamTask, 0, 1000);
+					sendServerInfo();
 				}
 				else
 				{
@@ -195,6 +197,9 @@ public class PlayerThread implements Runnable
 				break;	
 			case PacketType.PACKET_DISCONNECT:
 				disconnect();
+				break;
+			case PacketType.PACKET_ADD_GAMECOMMAND:
+				receiveCommand(p);
 		}
 	}
 
@@ -289,6 +294,18 @@ public class PlayerThread implements Runnable
 		// TODO: Implement this method
 	}
 
+	public void updateTeamList(){
+		this.teamTask.run();
+	}
+	
+	public void ping() throws IOException{
+		GameOutputStream o = new GameOutputStream();
+		o.writeLong(new Random().nextLong());
+		o.writeByte(0);
+		Packet p = o.createPacket(108);
+		sendPacket(p);
+	}
+	
 	public void disconnect()
 	{
 		log.d("Disconnecting");
@@ -306,11 +323,9 @@ public class PlayerThread implements Runnable
 		ByteArrayInputStream by = new ByteArrayInputStream(p.bytes);
 		DataInputStream n = new DataInputStream(by);
 		String message = n.readUTF();
-		/*if(message.startsWith(".") || message.startsWith("-") || message.startsWith("_")){
-			CommandUtil.executeCommand(message.substring(1), this);
-		}else{
-			
-		}*/
+		if(message.startsWith(".") || message.startsWith("-") || message.startsWith("_")){
+			ChatCommand.executeCommand(message.substring(1), this);
+			}
 		Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
 	}
 

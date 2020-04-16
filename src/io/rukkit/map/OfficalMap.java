@@ -1,0 +1,41 @@
+package io.rukkit.map;
+
+public class OfficalMap
+{
+	public static String[] maps = {
+		"[p2]Beach landing (2p) [by hxyy]",
+		"[p2]Big Island (2p)",
+		"[p2]Dire_Straight (2p) [by uber]",
+		"[p2]Fire Bridge (2p) [by uber]",
+		"[p2]Ice Island (2p)",
+		"[p2]Lake (2p)",
+		"[p2]Small_Island (2p)",
+		"[p2]Two_cold_sides (2p)",
+		"[p3]Hercules_(2vs1p) [by_uber]",
+		"[p3]King of the Middle (3p)_demo",
+		"[p4]Depth charges (4p) [by hxyy]",
+		"[p4]Desert (4p)",
+		"[p4]Ice Lake (4p) [by hxyy]",
+		"[p4]Island freeze (4p) [by hxyy]",
+		"[p4]Lava Maze (4p)",
+		"[p4]Lava Vortex (4p)",
+		"[p4]Nuclear war (4p) [by hxyy]",
+		"[p6]Shore to Shore (6p)",
+		"[p6]Valley Pass (6p)",
+		"[p8]Bridges Over Lava (8p)",
+		"[p8]Coastline (8p) [by hxyy]",
+		"[p8]Huge Subdivide (8p)",
+		"[p8]Interlocked (8p)",
+		"[p8]Interlocked Large (8p)",
+		"[p8]Isle Ring (8p)",
+		"[p8]Large Ice Outcrop (8p)",
+		"[p8]Lava Bio-grid(8p)",
+		"[p8]Lava Divide(8p)",
+		"[p8]Many Islands (8p)",
+		"[p8]Random Islands (8p)",
+		"[p8]Two Sides (8p)",
+		"[z;p10]Two Sides Remake (10p)",
+		"[z;p10]Valley Arena (10p) [by_uber]",
+		"[z;p10]Many Islands Large (10p)",
+		"[z;p10]Crossing Large (10p)"};
+}

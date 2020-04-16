@@ -9,8 +9,11 @@ public class Rukkit
 	private static final Logger log = new Logger("Main");
 	public static void main(String args[]){
 		log.i("Welcome to use Rukkit Server!");
-		ServerProperties.unitPath = System.getProperty("java.class.path") + "/unitmeta.conf";
-		log.i(ServerProperties.unitPath);
+		//In Android;
+		//ServerProperties.unitPath = "/sdcard/unitmeta.conf";
+		//In JAR
+		ServerProperties.unitPath = System.getProperty("java.class.path") + "/unitmeta.conf"
+		log.d("Unit config path = " + ServerProperties.unitPath);
 		thread = new NetGame(5123);
 		thread.run();
 	}
