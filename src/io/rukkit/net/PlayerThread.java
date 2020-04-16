@@ -33,7 +33,6 @@ public class PlayerThread implements Runnable
 				out.writeInt(p.bytes.length);
 				out.writeInt(p.type);
 				out.write(p.bytes);
-				out.flush();
 				//尝试次数加一
 				tryTimes += 1;
 			}
@@ -181,6 +180,7 @@ public class PlayerThread implements Runnable
 					new Timer().schedule(heartBeatTask, 0, 2000);
 					new Timer().schedule(teamTask, 0, 1000);
 					sendServerInfo();
+					sendSystemMessage("欢迎来到Rukkit服务器，输入-help查看指令列表！");
 				}
 				else
 				{
@@ -209,7 +209,6 @@ public class PlayerThread implements Runnable
 		out.writeInt(p.bytes.length);
 		out.writeInt(p.type);
 		out.write(p.bytes);
-		out.flush();
 	}
 
 
@@ -229,7 +228,6 @@ public class PlayerThread implements Runnable
 			out.writeInt(p.bytes.length);
 			out.writeInt(p.type);
 			out.write(p.bytes);
-			out.flush();
 		}
 		catch (IOException e)
 		{
@@ -270,7 +268,8 @@ public class PlayerThread implements Runnable
 		out.stream.writeInt(78);
 		BufferedReader reader = new BufferedReader(new FileReader(ServerProperties.unitPath));
 		String b = null;
-		while((b = reader.readLine()) != null){
+		while ((b = reader.readLine()) != null)
+		{
 			String unitdata[] = b.split("%#%");
 			out.stream.writeUTF(unitdata[0]);
 			out.stream.writeInt(Integer.parseInt(unitdata[1]));
@@ -294,42 +293,50 @@ public class PlayerThread implements Runnable
 		// TODO: Implement this method
 	}
 
-	public void updateTeamList(){
+	public void updateTeamList()
+	{
 		this.teamTask.run();
 	}
-	
-	public void ping() throws IOException{
+
+	public void ping() throws IOException
+	{
 		GameOutputStream o = new GameOutputStream();
 		o.writeLong(new Random().nextLong());
 		o.writeByte(0);
 		Packet p = o.createPacket(108);
 		sendPacket(p);
 	}
-	
+
 	public void disconnect()
 	{
 		log.d("Disconnecting");
 		Rukkit.thread.clients.remove(this);
-		Rukkit.thread.player.deletePlayer(threadIndex);
-		try {
+		Rukkit.thread.player.disconnectPlayer(threadIndex);
+		try
+		{
 			this.client.close();
-		} catch (IOException e) {
+		}
+		catch (IOException e)
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
-	private void receiveChat(Packet p) throws IOException{
+
+	private void receiveChat(Packet p) throws IOException
+	{
 		ByteArrayInputStream by = new ByteArrayInputStream(p.bytes);
 		DataInputStream n = new DataInputStream(by);
 		String message = n.readUTF();
-		if(message.startsWith(".") || message.startsWith("-") || message.startsWith("_")){
+		if (message.startsWith(".") || message.startsWith("-") || message.startsWith("_"))
+		{
 			ChatCommand.executeCommand(message.substring(1), this);
-			}
+		}
 		Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
 	}
 
-	private void receiveCommand(Packet p) throws IOException{
+	private void receiveCommand(Packet p) throws IOException
+	{
 		GameInputStream in = new GameInputStream(p);
 		byte[] tin = in.getDecodeBytes();
 		GameCommand cmd = new GameCommand();
@@ -338,25 +345,46 @@ public class PlayerThread implements Runnable
 		Rukkit.thread.commandQuere.addLast(cmd);
 	}
 
-	public void sendGameTickCommand(int tick, GameCommand cmd) throws IOException{
-		GameOutputStream o = new GameOutputStream();
-		o.writeInt(tick);
-		o.writeInt(1);
-		GzipEncoder enc = o.getEncodeStream("c");
-		enc.stream.write(cmd.arr);
-		//o.stream.write(cmd.arr);
-		o.flushEncodeData(enc);
-		sendPacket(o.createPacket(10));
+	public void sendGameTickCommand(final int tick, final GameCommand cmd)
+	{
+		try
+		{
+			GameOutputStream o = new GameOutputStream();
+			o.writeInt(tick);
+			o.writeInt(1);
+			GzipEncoder enc = o.getEncodeStream("c");
+			enc.stream.write(cmd.arr);
+			//o.stream.write(cmd.arr);
+			o.flushEncodeData(enc);
+			sendPacket(o.createPacket(10));
+		}
+		catch (Exception e)
+		{
+			log.e("Send tickcommand failed");
+			e.printStackTrace(System.out);
+		}
 	}
 
-	public void sendTick(int tick) throws IOException{
-		GameOutputStream o = new GameOutputStream();
-		o.writeInt(tick);
-		o.writeInt(0);
-		sendPacket(o.createPacket(10));
+	public void sendTick(final int tick)
+	{
+		try
+		{
+			// TODO: Implement ths method
+			GameOutputStream o = new GameOutputStream();
+			o.writeInt(tick);
+			o.writeInt(0);
+			sendPacket(o.createPacket(10));
+		}
+		catch (Exception e)
+		{
+			log.e("Send tick failed");
+			e.printStackTrace(System.out);
+		}
 	}
+	
 
-	public void startGame() throws IOException{
+	public void startGame() throws IOException
+	{
 		teamTask.run();
 		sendServerInfo();
 		GameOutputStream o = new GameOutputStream();

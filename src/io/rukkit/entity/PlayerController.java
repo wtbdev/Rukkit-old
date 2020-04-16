@@ -52,7 +52,7 @@ public class PlayerController
 				{
 					player.isAdmin = true;
 					/*Rukkit.thread.sendSystemBoardcast("玩家 " + player.playerName +
-											" 你是管理员了！输�? .start 来开始游戏！");*/
+											" 你是管理员了！输�? .start 来开始游戏！");*/
 				}
 				players[i] = player;
 				return i;
@@ -141,8 +141,7 @@ public class PlayerController
 		return true;
 	}
 
-	/* Uncompleted
-	public static void disconnectPlayer(int index)
+	public void disconnectPlayer(int index)
 	{
 		try{
 			if(players[index].isAdmin){
@@ -156,7 +155,7 @@ public class PlayerController
 			}
 		}catch(Exception e){}
 		players[index] = null;
-	}*/
+	}
 	
 	public void deletePlayer(int index)
 	{

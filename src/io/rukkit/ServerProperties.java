@@ -10,6 +10,7 @@ public class ServerProperties
 	/*Static Properties*/
 	public static int maxPlayer = 10;
 	public static int maxWatcher = 5;
-	public static boolean isDebug = true;
+	public static boolean isDebug = false;
 	public static String unitPath = null;
+	public static String logPath = "/sdcard/rukkit-error.log";
 }

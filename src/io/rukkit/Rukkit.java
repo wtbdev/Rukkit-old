@@ -12,7 +12,7 @@ public class Rukkit
 		//In Android;
 		//ServerProperties.unitPath = "/sdcard/unitmeta.conf";
 		//In JAR
-		ServerProperties.unitPath = System.getProperty("java.class.path") + "/unitmeta.conf"
+		ServerProperties.unitPath = System.getProperty("java.class.path") + "/unitmeta.conf";
 		log.d("Unit config path = " + ServerProperties.unitPath);
 		thread = new NetGame(5123);
 		thread.run();

@@ -15,7 +15,7 @@ public class GameThread
 	public boolean isGaming = false;
 	public boolean isReadying = false;
 	public ArrayList<PlayerThread> clients = new ArrayList<PlayerThread>();
-	public LinkedList<GameCommand> commandQuere = new LinkedList<GameCommand>();
+	public volatile LinkedList<GameCommand> commandQuere = new LinkedList<GameCommand>();
 	public PlayerController player = new PlayerController();
 	private final Logger log = new Logger("GameThread");
 
@@ -27,14 +27,17 @@ public class GameThread
 		@Override
 		public void run()
 		{
-			if(player.totalPlayers() < 2){
+			if (player.totalPlayers() < 2)
+			{
 				sendSystemBoardcast("一人无法开始游戏！");
 				return;
 			}
 			isReadying = true;
 			isGaming = true;
-			for(int i = 5;i >= 0;i--){
-				if(!isGaming){
+			for (int i = 5;i >= 0;i--)
+			{
+				if (!isGaming)
+				{
 					break;
 				}
 				sendSystemBoardcast("游戏将在 " + i + "秒后启动...");
@@ -45,11 +48,13 @@ public class GameThread
 				catch (InterruptedException e)
 				{}
 			}
-			if(!isGaming){
+			if (!isGaming)
+			{
 				sendSystemBoardcast("游戏准备被停止！");
 				return;
 			}
-			for(PlayerThread s : clients){
+			for (PlayerThread s : clients)
+			{
 				try
 				{
 					s.startGame();
@@ -70,7 +75,8 @@ public class GameThread
 
 	private class GameTickTask extends TimerTask
 	{
-		public GameTickTask(){
+		public GameTickTask()
+		{
 			time = 0;
 			resetTime = 0;
 		}
@@ -83,45 +89,48 @@ public class GameThread
 			time += 10;
 			log.i(clients.size());
 			log.i(resetTime);
-			if(player.totalPlayers() <= 0){
+			if (player.totalPlayers() <= 0)
+			{
 				resetTime = 600;
 			}
-			if(player.totalPlayers() <= 1){
-				if(resetTime >= 600){
+			if (player.totalPlayers() <= 1)
+			{
+				if (resetTime >= 600)
+				{
 					sendSystemBoardcast("游戏结束！");
 					disconnectAll();
 					isGaming = false;
 					cancel();
 				}
-				if(resetTime == 0){
+				if (resetTime == 0)
+				{
 					sendSystemBoardcast("提示： 服务器只剩你一人，1分钟后服务器将重置。要继续这盘游戏请保存存档到本地！");
 				}
 				resetTime += 2;
-			}else{
+			}
+			else
+			{
 				resetTime = 0;
 			}
-			if(commandQuere.size() != 0){
+			if (commandQuere.size() != 0)
+			{
 				log.d("Command Tick sended");
-				GameCommand cmd = commandQuere.removeLast();
-				for(PlayerThread s : clients){
-					try
-					{
-						s.sendGameTickCommand(time, cmd);
-					}
-					catch (IOException e)
-					{}
+				final GameCommand cmd = commandQuere.removeLast();
+				for (final PlayerThread s : clients)
+				{
+					new Thread(new Runnable(){@Override public void run(){
+					s.sendGameTickCommand(time, cmd);
+					}}).start();
 				}
-			}else{
-				for(PlayerThread s : clients){
-					try
-					{
-						s.sendTick(time);
-						player.fetchPlayer(s.threadIndex).playerCredits += 36;
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
+			}
+			else
+			{
+				for (final PlayerThread s : clients)
+				{
+					new Thread(new Runnable(){@Override public void run(){
+								s.sendTick(time);
+							}}).start();
+					//player.fetchPlayer(s.threadIndex).playerCredits += 36;
 				}
 			}
 			// TODO: Implement this method
@@ -131,13 +140,25 @@ public class GameThread
 	private class RandyTask extends TimerTask
 	{
 
+		private int loadTime = 0;
 		private GameThread.GameTickTask gameTickTask;
 		@Override
 		public void run()
 		{
-			if(player.isAllRandy()){
+			if (player.isAllRandy())
+			{
 				gameTickTask = new GameTickTask();
 				new Timer().schedule(gameTickTask, 0, 200);
+				sendSystemBoardcast("本服务端基于Rukkit Engine！");
+				sendSystemBoardcast("请不要中途断线，将会无法同步！");
+				cancel();
+			}
+			loadTime += 100;
+			if (loadTime > 3000)
+			{
+				gameTickTask = new GameTickTask();
+				new Timer().schedule(gameTickTask, 0, 150);
+				sendSystemBoardcast("有玩家未准备好！");
 				sendSystemBoardcast("本服务端基于Rukkit Engine！");
 				sendSystemBoardcast("请不要中途断线，将会无法同步！");
 				cancel();
@@ -145,16 +166,20 @@ public class GameThread
 			// TODO: Implement this method
 		}
 	}
-	
-	
-	public void disconnectAll(){
-		for(PlayerThread s : clients){
+
+
+	public void disconnectAll()
+	{
+		for (PlayerThread s : clients)
+		{
 			s.disconnect();
 		}
 	}
 
-	public void kickAll(String reason){
-		for(PlayerThread s : clients){
+	public void kickAll(String reason)
+	{
+		for (PlayerThread s : clients)
+		{
 			try
 			{
 				s.sendKick(reason);
@@ -166,8 +191,10 @@ public class GameThread
 		}
 	}
 
-	public void updateServerInfo(){
-		for(PlayerThread s : clients){
+	public void updateServerInfo()
+	{
+		for (PlayerThread s : clients)
+		{
 			try
 			{
 				s.sendServerInfo();
@@ -179,25 +206,32 @@ public class GameThread
 		}
 	}
 
-	 public void startGame(){
-	 if(!isGaming){
-	 new Thread(new StartTask()).start();
-	 }
-	 }
+	public void startGame()
+	{
+		if (!isGaming)
+		{
+			new Thread(new StartTask()).start();
+		}
+	}
 
-	public void sendBroadcast(String msg, String sendBy, int team){
-		for(PlayerThread s : clients){
+	public void sendBroadcast(String msg, String sendBy, int team)
+	{
+		for (PlayerThread s : clients)
+		{
 			s.sendChatMessage(msg, sendBy, team);
 		}
 	}
 
-	public void sendPlayerBroadcast(String msg, String sendBy){
-		for(PlayerThread s : clients){
+	public void sendPlayerBroadcast(String msg, String sendBy)
+	{
+		for (PlayerThread s : clients)
+		{
 			s.sendChatMessage(msg, sendBy, s.threadIndex);
 		}
 	}
 
-	public void sendSystemBoardcast(String msg){
+	public void sendSystemBoardcast(String msg)
+	{
 		sendBroadcast(msg, "SERVER", 5);
 	}
 }
