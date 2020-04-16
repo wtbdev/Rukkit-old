@@ -26,6 +26,7 @@ public class PlayerThread implements Runnable
 			GameOutputStream o = new GameOutputStream();
 			try
 			{
+				log.d("Send Heartbeat packet(Trytimes = " + tryTimes);
 				o.writeLong(new Random().nextLong());
 				o.writeByte(0);
 				Packet p = o.createPacket(108);
@@ -38,6 +39,8 @@ public class PlayerThread implements Runnable
 			}
 			catch (IOException e)
 			{
+				log.w("Cannot send Heartbeat.Client is disconnected.");
+				tryTimes += 10;
 				cancel();
 			}
 		}
@@ -187,8 +190,11 @@ public class PlayerThread implements Runnable
 				//sendSystemMessage("Have a try");
 				break;
 			case PacketType.PACKET_ADD_CHAT:
+				log.d("Chat Received");
 				receiveChat(p);
 				break;	
+			case PacketType.PACKET_DISCONNECT:
+				disconnect();
 		}
 	}
 
@@ -242,7 +248,15 @@ public class PlayerThread implements Runnable
 
 	public void disconnect()
 	{
-		// TODO: Implement this method
+		log.d("Disconnecting");
+		Rukkit.thread.clients.remove(this);
+		Rukkit.thread.player.deletePlayer(threadIndex);
+		try {
+			this.client.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void receiveChat(Packet p) throws IOException{
@@ -252,8 +266,9 @@ public class PlayerThread implements Runnable
 		/*if(message.startsWith(".") || message.startsWith("-") || message.startsWith("_")){
 			CommandUtil.executeCommand(message.substring(1), this);
 		}else{
-			Main.sendBroadcast(message, PlayerUtil.fetchPlayer(index).playerName, index);
+			
 		}*/
+		Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
 	}
 
 	private void receiveCommand(Packet p) throws IOException{

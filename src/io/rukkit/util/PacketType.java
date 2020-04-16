@@ -14,6 +14,7 @@ public class PacketType
 	public static final int PACKET_HEART_BEAT_RESPONSE = 109;
 	public static final int PACKET_ADD_CHAT = 140;
 	public static final int PACKET_PLAYER_INFO = 110;
+	public static final int PACKET_DISCONNECT = 111;
 	
 	//Game Commands
 	public static final int PACKET_ADD_GAMECOMMAND = 20;
