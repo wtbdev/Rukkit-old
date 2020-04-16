@@ -238,7 +238,50 @@ public class PlayerThread implements Runnable
 
 	public void sendServerInfo() throws IOException
 	{
-		// TODO: Implement this method
+		GameOutputStream o = new GameOutputStream();
+		o.writeString("com.corrodinggames.rts");
+		o.writeInt(136);
+		o.writeInt(0);
+		o.writeString(ServerProperties.mapName);
+		o.writeInt(0);
+		o.writeInt(2);
+		o.writeBoolean(true);
+
+		o.writeInt(1);
+		o.writeByte(6);
+		o.writeBoolean(false);
+		o.writeBoolean(false);
+		o.writeInt(250);
+		o.writeInt(250);
+
+		o.writeInt(1);
+		o.writeFloat(ServerProperties.income);
+		o.writeBoolean(false);
+		o.writeBoolean(false);
+		o.writeBoolean(true);
+
+		GzipEncoder out = o.getEncodeStream("customUnits");
+		out.stream.writeInt(1);
+		out.stream.writeInt(78);
+		BufferedReader reader = new BufferedReader(new FileReader(ServerProperties.unitPath));
+		String b = null;
+		while((b = reader.readLine()) != null){
+			String unitdata[] = b.split("%#%");
+			out.stream.writeUTF(unitdata[0]);
+			out.stream.writeInt(Integer.parseInt(unitdata[1]));
+			out.stream.writeBoolean(true);
+			out.stream.writeBoolean(false);
+			out.stream.writeLong(0);
+			out.stream.writeLong(0);
+		}
+
+		o.flushEncodeData(out);
+
+		o.writeBoolean(false);
+		o.writeBoolean(false);
+		o.writeBoolean(false);
+
+		sendPacket(o.createPacket(106));
 	}
 
 	public void sendKick(String reason) throws IOException

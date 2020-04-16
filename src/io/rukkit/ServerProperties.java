@@ -11,4 +11,5 @@ public class ServerProperties
 	public static int maxPlayer = 10;
 	public static int maxWatcher = 5;
 	public static boolean isDebug = true;
+	public static String unitPath = null;
 }
