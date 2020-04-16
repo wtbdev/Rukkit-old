@@ -13,7 +13,8 @@ public class PlayerThread implements Runnable
 	{
 
 		private DataOutputStream out;
-		public HeartBeatTask() throws IOException{
+		public HeartBeatTask() throws IOException
+		{
 			this.out = new DataOutputStream(client.getOutputStream());
 		}
 
@@ -46,10 +47,11 @@ public class PlayerThread implements Runnable
 
 		private DataOutputStream out;
 
-		public TeamTask() throws IOException{
+		public TeamTask() throws IOException
+		{
 			this.out = new DataOutputStream(client.getOutputStream());
 		}
-		
+
 		@Override
 		public void run()
 		{
@@ -108,7 +110,7 @@ public class PlayerThread implements Runnable
 	private int tryTimes = 0;
 	private HeartBeatTask heartBeatTask;
 	private TeamTask teamTask;
-	public Logger log;
+	public Logger log = new Logger("UnknownPlayer");
 	public int threadIndex;
 
 	public PlayerThread(Socket sock) throws IOException
@@ -121,11 +123,14 @@ public class PlayerThread implements Runnable
 	@Override
 	public void run()
 	{
-		try{
-			while(true){
+		try
+		{
+			while (true)
+			{
 				DataInputStream in = new DataInputStream(client.getInputStream());
 				//Player timed out OR diconnected
-				if (tryTimes > 10){
+				if (tryTimes > 10)
+				{
 					log.i("Player disconnected. (index=" + threadIndex + ")");
 					disconnect();
 					break;
@@ -149,31 +154,41 @@ public class PlayerThread implements Runnable
 				//Do Actions
 				doActions(packet);
 			}
-		}catch(IOException e){
-			
+		}
+		catch (IOException e)
+		{
+
 		}
 	}
 
-	private void doActions(Packet p) throws IOException{
-		switch(p.type){
-			//PreRegister
+	private void doActions(Packet p) throws IOException
+	{
+		switch (p.type)
+		{
+				//PreRegister
 			case PacketType.PACKET_PREREGISTER_CONNECTION:
 				registerConnection(p);
 				break;
-			//GetPlayerData
+				//GetPlayerData
 			case PacketType.PACKET_PLAYER_INFO:
-				getPlayerInfo(p);
+				if (getPlayerInfo(p))
+				{
+					new Timer().schedule(heartBeatTask, 0, 2000);
+				}
+				else
+				{
+					disconnect();
+				}
 				break;
 			case PacketType.PACKET_HEART_BEAT_RESPONSE:
 				this.tryTimes = 0;
-				new Timer().schedule(heartBeatTask, 0, 2000);
 				sendSystemMessage("Have a try");
 				break;
 			case PacketType.PACKET_ADD_CHAT:
 				break;	
 		}
 	}
-	
+
 	public void sendPacket(Packet p) throws IOException
 	{
 		DataOutputStream out = new DataOutputStream(client.getOutputStream());
@@ -206,8 +221,9 @@ public class PlayerThread implements Runnable
 		{
 		}
 	}
-	
-	public void sendSystemMessage(String msg){
+
+	public void sendSystemMessage(String msg)
+	{
 		sendChatMessage(msg, "SERVER", 5);
 	}
 
@@ -225,8 +241,8 @@ public class PlayerThread implements Runnable
 	{
 		// TODO: Implement this method
 	}
-	
-	private void getPlayerInfo(Packet p) throws IOException
+
+	private boolean getPlayerInfo(Packet p) throws IOException
 	{
 		ByteArrayInputStream by = new ByteArrayInputStream(p.bytes);
 		DataInputStream n = new DataInputStream(by);
@@ -235,24 +251,33 @@ public class PlayerThread implements Runnable
 		log.d(n.readInt());
 		log.d(n.readInt());
 		String name = n.readUTF();
-		if(Rukkit.thread.isGaming){
+		if (Rukkit.thread.isGaming)
+		{
 			this.threadIndex = -1;
-		}else{
+		}
+		else
+		{
 			this.threadIndex = PlayerUtil.addPlayer(name);
 		}
-		if (this.threadIndex == -1){
+		if (this.threadIndex == -1)
+		{
 			this.threadIndex = PlayerUtil.addWatcher(name);
 			sendSystemMessage("注意：您目前处于观战模式！");
-			if(this.threadIndex == -1){
-				if(Rukkit.thread.isGaming){
+			if (this.threadIndex == -1)
+			{
+				if (Rukkit.thread.isGaming)
+				{
 					sendKick("服务器彻底满了且已经开始游戏！" + "剩余玩家：" + PlayerUtil.totalPlayers() + "人！\n(Powered by Rukkit)");
-				}else{
+				}
+				else
+				{
 					sendKick("服务器彻底满了！");
 				}
-				return;
+				return false;
 			}
 		}
-		if(Rukkit.thread.isGaming){
+		if (Rukkit.thread.isGaming)
+		{
 			sendSystemMessage("游戏已经开始！剩余玩家：" + PlayerUtil.totalPlayers() + "人！\n(Powered by Rukkit)");
 		}
 		log.i(PlayerUtil.fetchPlayer(threadIndex).playerName);
@@ -262,6 +287,7 @@ public class PlayerThread implements Runnable
 		log.i((n.readUTF()));
 		log.d(n.readInt());
 		log.d(n.readUTF());
+		return true;
 	}
 
 	private void registerConnection(Packet p) throws IOException
