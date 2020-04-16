@@ -1,11 +1,13 @@
 package io.rukkit.net;
 
 import io.rukkit.command.*;
+import io.rukkit.net.*;
+import io.rukkit.util.*;
 import java.io.*;
 import java.util.*;
-import io.rukkit.util.*;
 
-public class GameThread implements Runnable
+//The base game thread
+public class GameThread
 {
 
 	public boolean isGaming = false;
@@ -13,13 +15,7 @@ public class GameThread implements Runnable
 	public ArrayList<PlayerThread> clients = new ArrayList<PlayerThread>();
 	public LinkedList<GameCommand> commandQuere = new LinkedList<GameCommand>();
 	private final Logger log = new Logger("GameThread");
-	
-	@Override
-	public void run()
-	{
-		// TODO: Implement this method
-	}
-	
+
 	public void disconnectAll(){
 		for(PlayerThread s : clients){
 			s.disconnect();
@@ -53,11 +49,11 @@ public class GameThread implements Runnable
 	}
 
 	/* Uncompleted
-	public void startGame(){
-		if(!isGaming){
-			new Thread(new StartTask()).start();
-		}
-	}*/
+	 public void startGame(){
+	 if(!isGaming){
+	 new Thread(new StartTask()).start();
+	 }
+	 }*/
 
 	public void sendBroadcast(String msg, String sendBy, int team){
 		for(PlayerThread s : clients){
