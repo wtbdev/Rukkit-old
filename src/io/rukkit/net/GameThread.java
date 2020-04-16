@@ -1,6 +1,7 @@
 package io.rukkit.net;
 
 import io.rukkit.command.*;
+import io.rukkit.entity.PlayerController;
 import io.rukkit.net.*;
 import io.rukkit.util.*;
 import java.io.*;
@@ -14,6 +15,7 @@ public class GameThread
 	public boolean isReadying = false;
 	public ArrayList<PlayerThread> clients = new ArrayList<PlayerThread>();
 	public LinkedList<GameCommand> commandQuere = new LinkedList<GameCommand>();
+	public PlayerController player = new PlayerController();
 	private final Logger log = new Logger("GameThread");
 
 	public void disconnectAll(){

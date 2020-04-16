@@ -1,5 +1,6 @@
 package io.rukkit.entity;
 
+import io.rukkit.Rukkit;
 import io.rukkit.util.*;
 import java.io.*;
 import java.util.*;
@@ -43,14 +44,14 @@ public class Player
 	}
 
 	public boolean movePlayer(int index){
-		Player player = PlayerUtil.fetchPlayer(index);
+		Player player = Rukkit.thread.player.fetchPlayer(index);
 		if(player != null)return false;
 		if(index > 9 && index < 0){
 			return false;
 		}
-		PlayerUtil.deletePlayer(this.playerIndex);
+		Rukkit.thread.player.deletePlayer(this.playerIndex);
 		this.playerIndex = index;
-		PlayerUtil.addPlayer(this);
+		Rukkit.thread.player.addPlayer(this);
 		return true;
 	}
 
@@ -64,7 +65,7 @@ public class Player
 	}
 
 	public boolean giveAdmin(int index){
-		Player player = PlayerUtil.fetchPlayer(index);
+		Player player = Rukkit.thread.player.fetchPlayer(index);
 		if(index < 9 && index > 0 && player != null && this.isAdmin){
 			player.isAdmin = true;
 			this.isAdmin = false;

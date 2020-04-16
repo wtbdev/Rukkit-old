@@ -1,13 +1,13 @@
-package io.rukkit.util;
+package io.rukkit.entity;
 import io.rukkit.entity.*;
 import java.util.*;
 import io.rukkit.*;
 import io.rukkit.net.*;
 
-public class PlayerUtil
+public class PlayerController
 {
 	private static Player[] players = new Player[ServerProperties.maxPlayer + ServerProperties.maxWatcher];
-	public static Player fetchPlayer(int index)
+	public Player fetchPlayer(int index)
 	{
 		try
 		{
@@ -20,12 +20,12 @@ public class PlayerUtil
 		return players[index];
 	}
 
-	public static void addPlayer(Player p)
+	public void addPlayer(Player p)
 	{
 		players[p.playerIndex] = p;
 	}
 
-	public static int addPlayer(String name)
+	public int addPlayer(String name)
 	{
 		for (int i=0;i < ServerProperties.maxPlayer;i++)
 		{
@@ -52,7 +52,7 @@ public class PlayerUtil
 				{
 					player.isAdmin = true;
 					/*Rukkit.thread.sendSystemBoardcast("玩家 " + player.playerName +
-											" 你是管理员了！输入 .start 来开始游戏！");*/
+											" 你是管理员了！输�? .start 来开始游戏！");*/
 				}
 				players[i] = player;
 				return i;
@@ -62,7 +62,7 @@ public class PlayerUtil
 		return -1;
 	}
 	
-	public static int addWatcher(String name){
+	public int addWatcher(String name){
 		for (int i=ServerProperties.maxPlayer;i < players.length;i++)
 		{
 			try
@@ -83,7 +83,7 @@ public class PlayerUtil
 		return -1;
 	}
 
-	public static int totalPlayers()
+	public int totalPlayers()
 	{
 		int count = 0;
 		for (int i=0;i < ServerProperties.maxPlayer;i++)
@@ -99,7 +99,7 @@ public class PlayerUtil
 		return count;
 	}
 
-	public static int totalWatchers()
+	public int totalWatchers()
 	{
 		int count = 0;
 		for (int i=ServerProperties.maxPlayer - 1;i < players.length;i++)
@@ -115,12 +115,12 @@ public class PlayerUtil
 		return count;
 	}
 	
-	public static void setPlayer(Player p)
+	public void setPlayer(Player p)
 	{
 		players[p.playerIndex] = p;
 	}
 
-	public static boolean isAllRandy()
+	public boolean isAllRandy()
 	{
 		for (int i=0;i < ServerProperties.maxPlayer;i++)
 		{
@@ -158,7 +158,7 @@ public class PlayerUtil
 		players[index] = null;
 	}*/
 	
-	public static void deletePlayer(int index)
+	public void deletePlayer(int index)
 	{
 		players[index] = null;
 	}

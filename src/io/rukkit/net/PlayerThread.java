@@ -61,7 +61,7 @@ public class PlayerThread implements Runnable
 			{
 				if (threadIndex > ServerProperties.maxPlayer - 1)
 				{
-					o.writeInt(PlayerUtil.fetchPlayer(threadIndex).playerIndex);
+					o.writeInt(Rukkit.thread.player.fetchPlayer(threadIndex).playerIndex);
 				}
 				else
 				{
@@ -71,7 +71,7 @@ public class PlayerThread implements Runnable
 				GzipEncoder enc = o.getEncodeStream("teams");
 				for (int i =0;i < ServerProperties.maxPlayer;i++)
 				{
-					Player player = PlayerUtil.fetchPlayer(i);
+					Player player = Rukkit.thread.player.fetchPlayer(i);
 					enc.stream.writeBoolean(player != null);
 					if (player == null)continue;
 					enc.stream.writeInt(0);
@@ -94,7 +94,7 @@ public class PlayerThread implements Runnable
 				o.writeBoolean(false);
 				o.writeBoolean(false);
 
-				Packet p = o.createPacket(115);
+				Packet p = o.createPacket(PacketType.PACKET_TEAM_LIST);
 
 				sendPacket(p);
 			}
@@ -174,6 +174,7 @@ public class PlayerThread implements Runnable
 				if (getPlayerInfo(p))
 				{
 					new Timer().schedule(heartBeatTask, 0, 2000);
+					new Timer().schedule(teamTask, 0, 1000);
 				}
 				else
 				{
@@ -182,7 +183,7 @@ public class PlayerThread implements Runnable
 				break;
 			case PacketType.PACKET_HEART_BEAT_RESPONSE:
 				this.tryTimes = 0;
-				sendSystemMessage("Have a try");
+				//sendSystemMessage("Have a try");
 				break;
 			case PacketType.PACKET_ADD_CHAT:
 				break;	
@@ -211,7 +212,7 @@ public class PlayerThread implements Runnable
 			o.writeString(sendBy);
 			o.writeInt(team);
 			o.writeInt(team);
-			Packet p = o.createPacket(141);
+			Packet p = o.createPacket(PacketType.PACKET_SEND_CHAT);
 			out.writeInt(p.bytes.length);
 			out.writeInt(p.type);
 			out.write(p.bytes);
@@ -257,17 +258,17 @@ public class PlayerThread implements Runnable
 		}
 		else
 		{
-			this.threadIndex = PlayerUtil.addPlayer(name);
+			this.threadIndex = Rukkit.thread.player.addPlayer(name);
 		}
 		if (this.threadIndex == -1)
 		{
-			this.threadIndex = PlayerUtil.addWatcher(name);
+			this.threadIndex = Rukkit.thread.player.addWatcher(name);
 			sendSystemMessage("注意：您目前处于观战模式！");
 			if (this.threadIndex == -1)
 			{
 				if (Rukkit.thread.isGaming)
 				{
-					sendKick("服务器彻底满了且已经开始游戏！" + "剩余玩家：" + PlayerUtil.totalPlayers() + "人！\n(Powered by Rukkit)");
+					sendKick("服务器彻底满了且已经开始游戏！" + "剩余玩家：" + Rukkit.thread.player.totalPlayers() + "人！\n(Powered by Rukkit)");
 				}
 				else
 				{
@@ -278,9 +279,10 @@ public class PlayerThread implements Runnable
 		}
 		if (Rukkit.thread.isGaming)
 		{
-			sendSystemMessage("游戏已经开始！剩余玩家：" + PlayerUtil.totalPlayers() + "人！\n(Powered by Rukkit)");
+			sendSystemMessage("游戏已经开始！剩余玩家：" + Rukkit.thread.player.totalPlayers() + "人！\n(Powered by Rukkit)");
 		}
-		log.i(PlayerUtil.fetchPlayer(threadIndex).playerName);
+		this.log = new Logger("Player(index=" + this.threadIndex + ")");
+		log.i(Rukkit.thread.player.fetchPlayer(threadIndex).playerName);
 		log.d(n.readByte());
 		log.i(n.readUTF());
 		//PlayerID

@@ -11,7 +11,6 @@ public class GzipEncoder
 
     public GzipEncoder() throws IOException {
         this.buffer = new ByteArrayOutputStream();
-        BufferedOutputStream in = new BufferedOutputStream((OutputStream)new GZIPOutputStream((OutputStream)this.buffer));
-        this.stream = new DataOutputStream((OutputStream)in);
+        this.stream = new DataOutputStream((OutputStream)this.buffer);
     }
 }
