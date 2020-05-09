@@ -39,7 +39,8 @@ public class PlayerThread implements Runnable
 			catch (IOException e)
 			{
 				log.w("Cannot send Heartbeat.Client is disconnected.");
-				tryTimes += 10;
+				tryTimes = 114514;
+				disconnect();
 				cancel();
 			}
 		}
@@ -337,6 +338,9 @@ public class PlayerThread implements Runnable
 
 	private void receiveCommand(Packet p) throws IOException
 	{
+		if(this.threadIndex > ServerProperties.maxPlayer){
+			return;
+		}
 		GameInputStream in = new GameInputStream(p);
 		byte[] tin = in.getDecodeBytes();
 		GameCommand cmd = new GameCommand();

@@ -58,8 +58,6 @@ public class GameThread
 				try
 				{
 					s.startGame();
-					randyTask = new RandyTask();
-					new Timer().schedule(randyTask, 0, 100);
 					isReadying = false;
 				}
 				catch (IOException e)
@@ -67,6 +65,8 @@ public class GameThread
 					e.printStackTrace();
 				}
 			}
+			randyTask = new RandyTask();
+			new Timer().schedule(randyTask, 0, 100);
 			// TODO: Implement this method
 		}
 
@@ -87,8 +87,9 @@ public class GameThread
 		public void run()
 		{
 			time += 10;
-			log.i(clients.size());
-			log.i(resetTime);
+			log.d(clients.size());
+			log.d(resetTime);
+			log.d(player.totalPlayers());
 			if (player.totalPlayers() <= 0)
 			{
 				resetTime = 600;
@@ -118,18 +119,14 @@ public class GameThread
 				final GameCommand cmd = commandQuere.removeLast();
 				for (final PlayerThread s : clients)
 				{
-					new Thread(new Runnable(){@Override public void run(){
 					s.sendGameTickCommand(time, cmd);
-					}}).start();
 				}
 			}
 			else
 			{
 				for (final PlayerThread s : clients)
 				{
-					new Thread(new Runnable(){@Override public void run(){
-								s.sendTick(time);
-							}}).start();
+					s.sendTick(time);
 					//player.fetchPlayer(s.threadIndex).playerCredits += 36;
 				}
 			}
