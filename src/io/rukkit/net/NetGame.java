@@ -5,6 +5,7 @@ import java.io.*;
 import java.util.*;
 import io.rukkit.util.*;
 import java.net.*;
+import io.rukkit.*;
 
 public class NetGame extends GameThread
 {
@@ -22,6 +23,7 @@ public class NetGame extends GameThread
 		try
 		{
 			ServerSocket server = new ServerSocket(this.networkPort);
+			Demo.main(this.networkPort);
 			while (true)
 			{
 				Socket sock = server.accept();
@@ -30,7 +32,7 @@ public class NetGame extends GameThread
 				new Thread(thread).start();
 			}
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			log.e("Can't start Service");
 			e.printStackTrace();
