@@ -129,7 +129,7 @@ public class PlayerThread implements Runnable
 	{
 		try
 		{
-			while (true)
+			while (tryTimes < 10)
 			{
 				DataInputStream in = new DataInputStream(client.getInputStream());
 				//Player timed out OR diconnected
@@ -204,12 +204,32 @@ public class PlayerThread implements Runnable
 		}
 	}
 
-	public void sendPacket(Packet p) throws IOException
+	public void sendPacket(final Packet p)
 	{
-		DataOutputStream out = new DataOutputStream(client.getOutputStream());
-		out.writeInt(p.bytes.length);
-		out.writeInt(p.type);
-		out.write(p.bytes);
+		if (tryTimes < 10)
+		{
+			new Thread(new Runnable(){
+					public void run()
+					{
+						try
+						{
+							DataOutputStream out = new DataOutputStream(client.getOutputStream());
+							out.writeInt(p.bytes.length);
+							out.writeInt(p.type);
+							out.write(p.bytes);
+						}
+						catch (IOException e)
+						{
+							log.e("Packets send failed!Retrying...");
+						}
+					}
+				});
+		}
+		else
+		{
+			log.e("Client on responce.Disconnecting...");
+			disconnect();
+		}
 	}
 
 
@@ -338,7 +358,8 @@ public class PlayerThread implements Runnable
 
 	private void receiveCommand(Packet p) throws IOException
 	{
-		if(this.threadIndex > ServerProperties.maxPlayer){
+		if (this.threadIndex > ServerProperties.maxPlayer)
+		{
 			return;
 		}
 		GameInputStream in = new GameInputStream(p);
@@ -385,7 +406,7 @@ public class PlayerThread implements Runnable
 			e.printStackTrace(System.out);
 		}
 	}
-	
+
 
 	public void startGame() throws IOException
 	{
