@@ -19,6 +19,20 @@ public class GameThread
 	public PlayerController player = new PlayerController();
 	private final Logger log = new Logger("GameThread");
 
+	private class checkTask extends TimerTask
+	{
+
+		@Override
+		public void run()
+		{
+			if(player.totalPlayers() <= 0){
+				disconnectAll();
+				isGaming = false;
+			}
+			// TODO: Implement this method
+		}
+	}
+	
 	private class StartTask implements Runnable
 	{
 
@@ -164,6 +178,10 @@ public class GameThread
 		}
 	}
 
+	public GameThread(){
+		new Timer().schedule(new checkTask(), 0, 5000);
+	}
+	
 
 	public void disconnectAll()
 	{
