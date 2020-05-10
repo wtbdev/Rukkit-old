@@ -121,7 +121,7 @@ public class Demo {
 			// UUID
 			.append("&user_id=u_"+uuid)
 			// 用户名前部
-			.append("&game_name=unnamed")
+			.append("&game_name=SERVER")
 			// 版本
 			.append("&game_version=136")
 			.append("&game_version_string=1.13.3")
@@ -146,9 +146,9 @@ public class Demo {
 			// ?
 			.append("&game_status=battleroom")
 			// 当前玩家数量
-			.append("&player_count=1")
+			.append("&player_count=" + Rukkit.thread.player.totalPlayers())
 			// 最大
-			.append("&max_player_count=10");
+			.append("&max_player_count=" + (ServerProperties.maxPlayer + ServerProperties.maxWatcher));
 		System.out.println(doPost("http://gs4.corrodinggames.net/masterserver/1.3/interface",sb.toString()));
 		System.out.println("\n");
 		System.out.println(uuid);
