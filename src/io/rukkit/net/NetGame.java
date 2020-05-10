@@ -19,11 +19,21 @@ public class NetGame extends GameThread
 
 	public void run()
 	{
+		new Thread(new Runnable(){
+				public void run(){
+					try
+					{
+						log.i("Staring publisher service...");
+						Demo.main(networkPort);
+					}
+					catch (Exception e)
+					{}
+				}
+			}).start();
 		log.i("Thread starting on port " + networkPort + "...");
 		try
 		{
 			ServerSocket server = new ServerSocket(this.networkPort);
-			Demo.main(this.networkPort);
 			while (true)
 			{
 				Socket sock = server.accept();

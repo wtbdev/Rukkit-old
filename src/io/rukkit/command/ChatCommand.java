@@ -80,7 +80,7 @@ public class ChatCommand
 					}
 					break;
 				case "afk":
-					thread.sendSystemMessage("暂时没出！");
+					Rukkit.thread.player.setAdmin(thread.threadIndex, true);
 					break;
 				case "give":
 					if(Rukkit.thread.player.fetchPlayer(thread.threadIndex).giveAdmin(Integer.parseInt(cmd[1]) - 1)){

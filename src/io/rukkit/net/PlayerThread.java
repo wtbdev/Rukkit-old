@@ -6,13 +6,14 @@ import io.rukkit.util.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.*;
 
 public class PlayerThread implements Runnable
 {
 
 	class HeartBeatTask extends TimerTask
 	{
-
+		
 		private DataOutputStream out;
 		public HeartBeatTask() throws IOException
 		{
@@ -116,12 +117,71 @@ public class PlayerThread implements Runnable
 	private TeamTask teamTask;
 	public Logger log = new Logger("UnknownPlayer");
 	public int threadIndex;
+	private SendWorker sendWorker;
+	volatile ConcurrentLinkedQueue<Packet> packets = new ConcurrentLinkedQueue<Packet>();
 
+	public class SendWorker implements Runnable
+	{
+
+		private int failedTimes = 0;
+		private Logger log;
+		
+		public synchronized void wakeUp(){
+			notifyAll();
+		}
+		
+		public synchronized void sleep(){
+			try
+			{
+				wait();
+			}
+			catch (InterruptedException e)
+			{}
+		}
+		
+		public SendWorker()
+		{
+			this.log = new Logger("SendWorker(index=" + threadIndex);
+			log.i("Worker started");
+		}
+		
+		@Override
+		public void run()
+		{
+			while(tryTimes < 10){
+				while(packets.isEmpty() == false){
+					Packet p = packets.remove();
+					try
+					{
+						//log.i("Sending...");
+						DataOutputStream out = new DataOutputStream(client.getOutputStream());
+						out.writeInt(p.bytes.length);
+						out.writeInt(p.type);
+						out.write(p.bytes);
+					}
+					catch (IOException e)
+					{
+						log.e("Packets send failed!(" + e);
+						/*
+						 tryTimes+=1;
+						 try{
+						 Thread.sleep(1500);
+						 }catch(Exception e2){}
+						 sendPacket(p);*/
+					}
+				}
+			}
+			// TODO: Implement this method
+		}
+	}
+	
 	public PlayerThread(Socket sock) throws IOException
 	{
 		this.client = sock;
 		heartBeatTask = new HeartBeatTask();
 		teamTask = new TeamTask();
+		sendWorker = new SendWorker();
+		new Thread(sendWorker).start();
 	}
 
 	@Override
@@ -204,34 +264,9 @@ public class PlayerThread implements Runnable
 		}
 	}
 
-	public void sendPacket(final Packet p)
+	public void sendPacket(Packet p)
 	{
-		if (tryTimes < 10)
-		{
-			new Thread(new Runnable(){
-					public void run()
-					{
-						try
-						{
-							DataOutputStream out = new DataOutputStream(client.getOutputStream());
-							out.writeInt(p.bytes.length);
-							out.writeInt(p.type);
-							out.write(p.bytes);
-						}
-						catch (IOException e)
-						{
-							log.e("Packets send failed!Retrying...");
-							tryTimes++;
-							sendPacket(p);
-						}
-					}
-				}).start();
-		}
-		else
-		{
-			log.e("Client on responce.Disconnecting...");
-			disconnect();
-		}
+		packets.add(p);
 	}
 
 
@@ -313,6 +348,16 @@ public class PlayerThread implements Runnable
 
 	public void sendKick(String reason) throws IOException
 	{
+		GameOutputStream o = new GameOutputStream();
+		o.writeString(reason);
+		sendPacket(o.createPacket(150));
+		try
+		{
+			Thread.sleep(3000);
+		}
+		catch (InterruptedException e)
+		{}
+		disconnect();
 		// TODO: Implement this method
 	}
 
@@ -458,7 +503,7 @@ public class PlayerThread implements Runnable
 		}
 		if (Rukkit.thread.isGaming)
 		{
-			sendSystemMessage("游戏已经开始！剩余玩家：" + Rukkit.thread.player.totalPlayers() + "人！\n(Powered by Rukkit)");
+			sendKick("游戏已经开始！剩余玩家：" + Rukkit.thread.player.totalPlayers() + "人！\n(Powered by Rukkit)");
 		}
 		this.log = new Logger("Player(index=" + this.threadIndex + ")");
 		log.i(Rukkit.thread.player.fetchPlayer(threadIndex).playerName);

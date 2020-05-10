@@ -79,7 +79,7 @@ public class Demo {
 		// 版本
 		.append("&game_version=136")
 		.append("&game_version_string=1.13.3")
-		// token
+		// tokenv
 		.append("&private_token="+token)
 		// token2
 		.append("&private_token_2="+b(b(token)))
@@ -113,6 +113,10 @@ public class Demo {
 	
 	public static void updateServer(String uuid, String token) throws Exception{
 		StringBuffer sb = new StringBuffer();
+		String stat = "battleroom";
+		if(Rukkit.thread.isGaming){
+			stat = "ingame";
+		}
 		// 创建ADD
 		sb.append("action=update")
 			.append("&id="+ "u_"+uuid)
@@ -144,9 +148,9 @@ public class Demo {
 			// ?
 			.append("&game_mode=skirmishMap")
 			// ?
-			.append("&game_status=battleroom")
+			.append("&game_status=" + stat)
 			// 当前玩家数量
-			.append("&player_count=" + Rukkit.thread.player.totalPlayers())
+			.append("&player_count=" + Rukkit.thread.clients.size())
 			// 最大
 			.append("&max_player_count=" + (ServerProperties.maxPlayer + ServerProperties.maxWatcher));
 		System.out.println(doPost("http://gs4.corrodinggames.net/masterserver/1.3/interface",sb.toString()));

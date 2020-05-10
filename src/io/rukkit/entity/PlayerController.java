@@ -25,6 +25,14 @@ public class PlayerController
 		players[p.playerIndex] = p;
 	}
 
+	public void setAdmin(int index, boolean bool){
+		try{
+			players[index].isAdmin = bool;
+		}catch(IndexOutOfBoundsException e){
+			// Ignore
+		}
+	}
+	
 	public int addPlayer(String name)
 	{
 		for (int i=0;i < ServerProperties.maxPlayer;i++)
@@ -144,7 +152,7 @@ public class PlayerController
 	public void disconnectPlayer(int index)
 	{
 		try{
-			if(players[index].isAdmin){
+			if(players[index].isAdmin && Rukkit.thread.clients.size() > 0){
 				for(PlayerThread s : Rukkit.thread.clients){
 					Player p = fetchPlayer(s.threadIndex);
 					p.isAdmin = true;
