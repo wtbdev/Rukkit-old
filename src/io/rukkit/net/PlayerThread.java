@@ -504,6 +504,9 @@ public class PlayerThread implements Runnable
 		if (Rukkit.thread.isGaming)
 		{
 			sendKick("游戏已经开始！剩余玩家：" + Rukkit.thread.player.totalPlayers() + "人！\n(Powered by Rukkit)");
+			if(Rukkit.thread.player.totalPlayers() <= 0){
+				Rukkit.thread.isGaming = false;
+			}
 		}
 		this.log = new Logger("Player(index=" + this.threadIndex + ")");
 		log.i(Rukkit.thread.player.fetchPlayer(threadIndex).playerName);
