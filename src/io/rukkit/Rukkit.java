@@ -1,6 +1,7 @@
 package io.rukkit;
 import io.rukkit.util.*;
 import io.rukkit.net.*;
+import java.io.*;
 
 public class Rukkit
 {
@@ -14,7 +15,16 @@ public class Rukkit
 		//In JAR
 		ServerProperties.unitPath = /*System.getProperty("java.class.path") + "/*/"unitmeta.conf";
 		log.d("Unit config path = " + ServerProperties.unitPath);
-		thread = new NetGame(5123);
-		thread.run();
+		try{
+			thread = new NetGame(Integer.parseInt(args[0]));
+			thread.run();
+		}
+		catch(ArrayIndexOutOfBoundsException e){
+			thread = new NetGame(5123);
+			thread.run();
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }
