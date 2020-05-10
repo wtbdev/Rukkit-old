@@ -221,9 +221,11 @@ public class PlayerThread implements Runnable
 						catch (IOException e)
 						{
 							log.e("Packets send failed!Retrying...");
+							tryTimes++;
+							sendPacket(p);
 						}
 					}
-				});
+				}).start();
 		}
 		else
 		{
