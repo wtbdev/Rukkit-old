@@ -198,7 +198,8 @@ public class ChatCommand
 											 ".watch 玩家位 观战该玩家\n" +
 											 ".unwatch 取消观战模式并回到玩家位\n" +
 											 ".afk 获得管理\n" +
-											 ".break 打破管理获得计时");
+											 ".break 打破管理获得计时\n" +
+											 ".who 查看谁是管理");
 					break;
 				case "stat":
 					if(!Rukkit.thread.isGaming){

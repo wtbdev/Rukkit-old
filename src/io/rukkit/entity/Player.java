@@ -15,20 +15,20 @@ public class Player
 	public int playerTeam = 0;
 	public int playerCredits = 4000;
 
-	public void writePlayer(DataOutputStream stream) throws IOException{
+	public void writePlayer(DataOutputStream stream, int ping) throws IOException{
 		stream.writeByte(playerIndex);
 		stream.writeInt(playerCredits);
 		stream.writeInt(playerTeam);
 		stream.writeBoolean(true);
-		stream.writeUTF(playerName);
+		if(isAdmin){
+			stream.writeUTF("[[[" + playerName + "]]]");
+		}else{
+			stream.writeUTF(playerName);
+		}
 		stream.writeBoolean(true);
 
 		//enc.stream.writeBoolean(true);
-		if(isAdmin){
-			stream.writeInt(-99);
-		}else{
-			stream.writeInt(50 + new Random().nextInt(200));
-		}
+		stream.writeInt(ping);
 		stream.writeLong(System.currentTimeMillis());
 
 		stream.writeBoolean(false);
@@ -66,7 +66,7 @@ public class Player
 
 	public boolean giveAdmin(int index){
 		Player player = Rukkit.thread.player.fetchPlayer(index);
-		if(index < 9 && index > 0 && player != null && this.isAdmin){
+		if(index < 9 && index >= 0 && player != null && this.isAdmin){
 			player.isAdmin = true;
 			this.isAdmin = false;
 			return true;

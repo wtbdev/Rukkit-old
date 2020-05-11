@@ -30,6 +30,7 @@ public class PlayerThread implements Runnable
 				log.d("Send Heartbeat packet(Trytimes = " + tryTimes);
 				o.writeLong(new Random().nextLong());
 				o.writeByte(0);
+				sendtime = System.currentTimeMillis();
 				Packet p = o.createPacket(108);
 				out.writeInt(p.bytes.length);
 				out.writeInt(p.type);
@@ -80,12 +81,12 @@ public class PlayerThread implements Runnable
 					enc.stream.writeBoolean(player != null);
 					if (player == null)continue;
 					enc.stream.writeInt(0);
-					player.writePlayer(enc.stream);
+					player.writePlayer(enc.stream, ping);
 				}
 				o.flushEncodeData(enc);
 
 				o.writeInt(2);
-				o.writeInt(4);
+				o.writeInt(0);
 				o.writeBoolean(true);
 				o.writeInt(1);
 				o.writeByte(4);
@@ -117,6 +118,8 @@ public class PlayerThread implements Runnable
 	private TeamTask teamTask;
 	public Logger log = new Logger("UnknownPlayer");
 	public int threadIndex;
+	private long sendtime, resptime;
+	public int ping = 10;
 	private SendWorker sendWorker;
 	volatile ConcurrentLinkedQueue<Packet> packets = new ConcurrentLinkedQueue<Packet>();
 
@@ -250,6 +253,8 @@ public class PlayerThread implements Runnable
 				break;
 			case PacketType.PACKET_HEART_BEAT_RESPONSE:
 				this.tryTimes = 0;
+				this.resptime = System.currentTimeMillis();
+				this.ping = (int) Math.abs((resptime - sendtime));
 				//sendSystemMessage("Have a try");
 				break;
 			case PacketType.PACKET_ADD_CHAT:
@@ -400,7 +405,7 @@ public class PlayerThread implements Runnable
 		{
 			ChatCommand.executeCommand(message.substring(1), this);
 		}
-		Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
+		//Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
 	}
 
 	private void receiveCommand(Packet p) throws IOException

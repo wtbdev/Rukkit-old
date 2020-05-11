@@ -19,6 +19,7 @@ public class NetGame extends GameThread
 
 	public void run()
 	{
+		/*
 		new Thread(new Runnable(){
 				public void run(){
 					try
@@ -29,7 +30,7 @@ public class NetGame extends GameThread
 					catch (Exception e)
 					{}
 				}
-			}).start();
+			}).start();*/
 		log.i("Thread starting on port " + networkPort + "...");
 		try
 		{
