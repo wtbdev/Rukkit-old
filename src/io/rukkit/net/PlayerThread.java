@@ -13,7 +13,7 @@ public class PlayerThread implements Runnable
 
 	class HeartBeatTask extends TimerTask
 	{
-		
+
 		private DataOutputStream out;
 		public HeartBeatTask() throws IOException
 		{
@@ -30,10 +30,9 @@ public class PlayerThread implements Runnable
 				log.d("Send Heartbeat packet(Trytimes = " + tryTimes);
 				o.writeLong(new Random().nextLong());
 				o.writeByte(0);
+				sendtime = System.currentTimeMillis();
 				Packet p = o.createPacket(108);
-				out.writeInt(p.bytes.length);
-				out.writeInt(p.type);
-				out.write(p.bytes);
+				sendPacket(p);
 				//尝试次数加一
 				tryTimes += 1;
 			}
@@ -80,12 +79,12 @@ public class PlayerThread implements Runnable
 					enc.stream.writeBoolean(player != null);
 					if (player == null)continue;
 					enc.stream.writeInt(0);
-					player.writePlayer(enc.stream);
+					player.writePlayer(enc.stream, ping);
 				}
 				o.flushEncodeData(enc);
 
 				o.writeInt(2);
-				o.writeInt(4);
+				o.writeInt(0);
 				o.writeBoolean(true);
 				o.writeInt(1);
 				o.writeByte(4);
@@ -117,6 +116,8 @@ public class PlayerThread implements Runnable
 	private TeamTask teamTask;
 	public Logger log = new Logger("UnknownPlayer");
 	public int threadIndex;
+	private long sendtime, resptime;
+	public int ping = 10;
 	private SendWorker sendWorker;
 	volatile ConcurrentLinkedQueue<Packet> packets = new ConcurrentLinkedQueue<Packet>();
 
@@ -125,12 +126,14 @@ public class PlayerThread implements Runnable
 
 		private int failedTimes = 0;
 		private Logger log;
-		
-		public synchronized void wakeUp(){
+
+		public synchronized void wakeUp()
+		{
 			notifyAll();
 		}
-		
-		public synchronized void sleep(){
+
+		public synchronized void sleep()
+		{
 			try
 			{
 				wait();
@@ -138,43 +141,48 @@ public class PlayerThread implements Runnable
 			catch (InterruptedException e)
 			{}
 		}
-		
+
 		public SendWorker()
 		{
 			this.log = new Logger("SendWorker(index=" + threadIndex);
 			log.i("Worker started");
 		}
-		
+
 		@Override
 		public void run()
 		{
-			while(tryTimes < 10){
-				while(packets.isEmpty() == false){
-					Packet p = packets.remove();
-					try
+			synchronized (packets)
+			{
+				while (tryTimes < 10)
+				{
+					while (packets.isEmpty() == false)
 					{
-						//log.i("Sending...");
-						DataOutputStream out = new DataOutputStream(client.getOutputStream());
-						out.writeInt(p.bytes.length);
-						out.writeInt(p.type);
-						out.write(p.bytes);
-					}
-					catch (IOException e)
-					{
-						log.e("Packets send failed!(" + e);
-						/*
-						 tryTimes+=1;
-						 try{
-						 Thread.sleep(1500);
-						 }catch(Exception e2){}
-						 sendPacket(p);*/
+						Packet p = packets.remove();
+						try
+						{
+							//log.i("Sending...");
+							DataOutputStream out = new DataOutputStream(client.getOutputStream());
+							out.writeInt(p.bytes.length);
+							out.writeInt(p.type);
+							out.write(p.bytes);
+						}
+						catch (IOException e)
+						{
+							log.e("Packets send failed!(" + e);
+							/*
+							 tryTimes+=1;
+							 try{
+							 Thread.sleep(1500);
+							 }catch(Exception e2){}
+							 sendPacket(p);*/
+						}
 					}
 				}
 			}
 			// TODO: Implement this method
 		}
 	}
-	
+
 	public PlayerThread(Socket sock) throws IOException
 	{
 		this.client = sock;
@@ -250,6 +258,8 @@ public class PlayerThread implements Runnable
 				break;
 			case PacketType.PACKET_HEART_BEAT_RESPONSE:
 				this.tryTimes = 0;
+				this.resptime = System.currentTimeMillis();
+				this.ping = (int) Math.abs((resptime - sendtime));
 				//sendSystemMessage("Have a try");
 				break;
 			case PacketType.PACKET_ADD_CHAT:
@@ -283,9 +293,7 @@ public class PlayerThread implements Runnable
 			o.writeInt(team);
 			o.writeInt(team);
 			Packet p = o.createPacket(PacketType.PACKET_SEND_CHAT);
-			out.writeInt(p.bytes.length);
-			out.writeInt(p.type);
-			out.write(p.bytes);
+			sendPacket(p);
 		}
 		catch (IOException e)
 		{
@@ -400,7 +408,7 @@ public class PlayerThread implements Runnable
 		{
 			ChatCommand.executeCommand(message.substring(1), this);
 		}
-		Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
+		//Rukkit.thread.sendBroadcast(message, Rukkit.thread.player.fetchPlayer(threadIndex).playerName, threadIndex);
 	}
 
 	private void receiveCommand(Packet p) throws IOException
@@ -504,7 +512,9 @@ public class PlayerThread implements Runnable
 		if (Rukkit.thread.isGaming)
 		{
 			sendKick("游戏已经开始！剩余玩家：" + Rukkit.thread.player.totalPlayers() + "人！\n(Powered by Rukkit)");
-			if(Rukkit.thread.player.totalPlayers() <= 0){
+			if (Rukkit.thread.player.totalPlayers() <= 0)
+			{
+				Rukkit.thread.disconnectAll();
 				Rukkit.thread.isGaming = false;
 			}
 		}

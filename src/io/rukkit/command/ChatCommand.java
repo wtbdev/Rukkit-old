@@ -5,10 +5,37 @@ import io.rukkit.map.*;
 import io.rukkit.net.*;
 import io.rukkit.util.*;
 import java.io.*;
+import java.util.*;
 
 public class ChatCommand
 {
 	private static Logger log = new Logger("Command");
+	private static AfkTask afkTask;
+	private static class AfkTask extends TimerTask
+	{
+		int afkTime = 0;
+		PlayerThread targetThread;
+		
+		public AfkTask(PlayerThread thread){
+			this.targetThread = thread;
+		}
+		
+		@Override
+		public void run()
+		{
+			// TODO: Implement this method
+			afkTime+=1;
+			if(afkTime == 15){
+				Rukkit.thread.sendSystemBoardcast("15 秒后转移管理员...");
+			}
+			if(afkTime == 30){
+				Rukkit.thread.sendSystemBoardcast("管理员已转移！");
+				Rukkit.thread.player.setAdmin(targetThread.threadIndex, true);
+				cancel();
+			}
+		}
+		
+	}
 	public static void executeCommand(String command, PlayerThread thread){
 		log.d("Executed:" + command);
 		String cmd[] = command.split(" ");
@@ -80,7 +107,13 @@ public class ChatCommand
 					}
 					break;
 				case "afk":
-					Rukkit.thread.player.setAdmin(thread.threadIndex, true);
+					afkTask = new AfkTask(thread);
+					new Timer().schedule(afkTask, 0, 1000);
+					Rukkit.thread.sendSystemBoardcast("AFK 倒数已开启...");
+					break;
+				case "break":
+					afkTask.cancel();
+					Rukkit.thread.sendSystemBoardcast("AFK 倒计时结束...");
 					break;
 				case "give":
 					if(Rukkit.thread.player.fetchPlayer(thread.threadIndex).giveAdmin(Integer.parseInt(cmd[1]) - 1)){
@@ -158,11 +191,15 @@ public class ChatCommand
 											 ".income 倍数 切换倍数\n" +
 											 ".auto_team 自动分队\n" +
 											 ".give 玩家位 把自己的管理给位置上的玩家\n" +
+											 ".kick 玩家位 把某号玩家踢出\n" +
 											 "[玩家指令]\n" +
 											 ".stop 在游戏准备开始时停止游戏\n" +
 											 ".stat 查看目前是否开始游戏\n" +
 											 ".watch 玩家位 观战该玩家\n" +
-											 ".unwatch 取消观战模式并回到玩家位");
+											 ".unwatch 取消观战模式并回到玩家位\n" +
+											 ".afk 获得管理\n" +
+											 ".break 打破管理获得计时\n" +
+											 ".who 查看谁是管理");
 					break;
 				case "stat":
 					if(!Rukkit.thread.isGaming){
@@ -231,6 +268,15 @@ public class ChatCommand
 						}
 					}
 					Rukkit.thread.sendSystemBoardcast("检查完成！");
+					break;
+				case "kick":
+					if(Rukkit.thread.isGaming){
+						thread.sendSystemMessage("游戏已经启动！");
+						return;
+					}
+					if(Rukkit.thread.player.fetchPlayer(thread.threadIndex).isAdmin){
+						Rukkit.thread.clients.get(Integer.parseInt(cmd[1])).sendKick("被房主踢出!");
+					}
 			}
 		}catch(Exception e){
 			thread.sendSystemMessage("参数有误！");
