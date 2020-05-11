@@ -19,7 +19,7 @@ public class NetGame extends GameThread
 
 	public void run()
 	{
-		/*
+/*
 		new Thread(new Runnable(){
 				public void run(){
 					try
