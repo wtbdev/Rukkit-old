@@ -1,3 +1,7 @@
+# Warning
+This project is unstable,And it already stopped develop.
+New version is developing.
+
 # Rukkit
 A Java based rustedwarfare server.
 
